@@ -236,7 +236,7 @@ namespace ParsecVDisplay
             }
         }
 
-        void RemoveLastDisplay(object sender, EventArgs e)
+        public void RemoveLastDisplay(object sender, EventArgs e)
         {
             try
             {

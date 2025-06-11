@@ -15,6 +15,8 @@ namespace ParsecVDisplay
 
         public static bool IsMenuOpen;
 
+        private static bool IsInFallback = false;
+
         public MainWindow()
         {
             Instance = this;
@@ -90,7 +92,7 @@ namespace ParsecVDisplay
         {
             Dispatcher.Invoke(() =>
             {
-                var displays = Vdd.Core.GetDisplays(out bool noMonitors);
+                var displays = Vdd.Core.GetDisplays(out bool otherMonitors);
 
                 xDisplays.Children.Clear();
                 xNoDisplay.Visibility = displays.Count > 0
@@ -103,10 +105,19 @@ namespace ParsecVDisplay
                 }
 
                 xAdd.IsEnabled = true;
-
-                if (noMonitors && Config.FallbackDisplay)
+                System.Diagnostics.Debug.WriteLine($"displays.Count = {displays.Count}");
+                System.Diagnostics.Debug.WriteLine($"otherMonitors = {otherMonitors}");
+                if (!otherMonitors && displays.Count == 0 && Config.FallbackDisplay && !IsInFallback)
                 {
                     AddDisplay(null, EventArgs.Empty);
+                    IsInFallback = true;
+                    // 输出 displays.Count
+                }
+
+                if (otherMonitors && displays.Count > 0 && IsInFallback)
+                {
+                    RemoveLastDisplay(null, EventArgs.Empty);
+                    IsInFallback = false;
                 }
             });
         }
@@ -114,6 +125,11 @@ namespace ParsecVDisplay
         private void AddDisplay(object sender, EventArgs e)
         {
             Tray.Instance.Invoke(() => Tray.Instance.AddDisplay(null, null));
+        }
+
+        private void RemoveLastDisplay(object sender, EventArgs e)
+        {
+            Tray.Instance.Invoke(() => Tray.Instance.RemoveLastDisplay(null, null));
         }
 
         private void OpenCustom(object sender, EventArgs e)
@@ -137,7 +153,7 @@ namespace ParsecVDisplay
             DisplayChanged(null, null);
             UpdateDriverLabel();
         }
-
+            
         private void QueryStatus(object sender, MouseButtonEventArgs e)
         {
             e.Handled = true;

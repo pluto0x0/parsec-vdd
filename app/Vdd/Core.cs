@@ -37,15 +37,16 @@ namespace ParsecVDisplay.Vdd
             Device.CloseHandle(vdd);
         }
 
-        public static List<Display> GetDisplays(out bool noMonitors)
+        public static List<Display> GetDisplays(out bool otherMonitors)
         {
             var displays = Display.GetAllDisplays();
-            noMonitors = displays.Count == 0;
+            int count = displays.Count;
 
             displays = displays.FindAll(d => d.DisplayName
                 .Equals(DISPLAY_ID, StringComparison.OrdinalIgnoreCase));
 
-            noMonitors = displays.Count == 0 && noMonitors;
+            otherMonitors = count != displays.Count;
+            //noMonitors = displays.Count == 0;
             return displays;
         }
 
